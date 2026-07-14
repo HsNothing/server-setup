@@ -9,7 +9,8 @@
 #   لیست پروژه‌ها رو پایین‌تر (قسمت PROJECTS) تعریف کن.
 #   هر پروژه سه چیز داره: اسم اسکرین، مسیر (دایرکتوری) و دستور اجرا.
 #   وقتی اسکریپت رو اجرا کنی، یه منو نشون داده می‌شه و با زدن عدد
-#   همون پروژه توی یه اسکرین جدا اجرا می‌شه و بعد خودش برمی‌گرده به ترمینال.
+#   همون پروژه توی یه اسکرین جدا اجرا می‌شه، دقیقاً مثل اینکه خودت
+#   دستی با «screen -S اسم» رفته باشی تو و دستورات رو تایپ کرده باشی.
 #
 # ============================================================
 #  اینجا پروژه‌هاتو تعریف کن
@@ -56,10 +57,15 @@ run_project() {
     echo -e "${CYAN}   Path: $dir${NC}"
     echo -e "${CYAN}   Command: $cmd${NC}"
 
-    # ساخت اسکرین جدید در حالت detached و اجرای دستور توش
-    screen -dmS "$screen_name" bash -c "cd '$dir' && $cmd; exec bash"
-    sleep 1
+    # دقیقا مثل روش دستی: اول یه اسکرین خالی می‌سازیم (بدون bash -c دور دستور)
+    screen -dmS "$screen_name"
+    sleep 0.5
 
+    # حالا دستورات رو انگار داریم خودمون تایپ می‌کنیم داخل همون اسکرین می‌فرستیم
+    screen -S "$screen_name" -X stuff "cd '$dir'$(printf \\r)"
+    screen -S "$screen_name" -X stuff "$cmd$(printf \\r)"
+
+    sleep 1
     echo -e "${GREEN}✔ Screen '$screen_name' created and the program is running in the background.${NC}"
     echo -e "To attach to it later, run: ${YELLOW}screen -r $screen_name${NC}"
 }
