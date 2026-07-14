@@ -11,84 +11,80 @@ set -e
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 CYAN='\033[0;36m'
+RED='\033[0;31m'
 NC='\033[0m' # No Color
 
-# ---------- Install functions ----------
-install_base() {
-    echo -e "${CYAN}>> Installing base: python3, pip, screen${NC}"
-    apt update
-    apt install -y python3 python3-pip screen
+# ============================================================
+#  پکیج‌هاتو اینجا تعریف کن — فقط همین یه خط کافیه
+#  فرمت هر خط: "اسم نمایشی|دستور نصب"
+#  اگه دستور نصب چند خط/چند دستوره، با && بهم وصلشون کن
+# ============================================================
+PACKAGES=(
+    "Base (python3 + pip + screen)|apt update && apt install -y python3 python3-pip screen"
+    "python-telegram-bot|python3 -m pip install python-telegram-bot --break-system-packages"
+    "pyTelegramBotAPI|python3 -m pip install pyTelegramBotAPI --break-system-packages"
+    "flask|python3 -m pip install flask --break-system-packages --ignore-installed blinker"
+    "aiosqlite|python3 -m pip install aiosqlite --break-system-packages"
+    "aiohttp|python3 -m pip install aiohttp --break-system-packages"
+    "telethon + requests|python3 -m pip install telethon requests --break-system-packages"
+)
+# مثال اضافه کردن پکیج جدید:
+# "django|python3 -m pip install django --break-system-packages"
+# ============================================================
+
+install_package() {
+    local title="$1"
+    local cmd="$2"
+    echo -e "${CYAN}>> Installing: $title${NC}"
+    bash -c "$cmd"
 }
 
-install_telegram_bot() {
-    echo -e "${CYAN}>> Installing python-telegram-bot${NC}"
-    python3 -m pip install python-telegram-bot --break-system-packages
-}
-
-install_pytelegrambotapi() {
-    echo -e "${CYAN}>> Installing pyTelegramBotAPI${NC}"
-    python3 -m pip install pyTelegramBotAPI --break-system-packages
-}
-
-install_flask() {
-    echo -e "${CYAN}>> Installing flask${NC}"
-    python3 -m pip install flask --break-system-packages --ignore-installed blinker
-}
-
-install_aiosqlite() {
-    echo -e "${CYAN}>> Installing aiosqlite${NC}"
-    python3 -m pip install aiosqlite --break-system-packages
-}
-
-install_aiohttp() {
-    echo -e "${CYAN}>> Installing aiohttp${NC}"
-    python3 -m pip install aiohttp --break-system-packages
-}
-
-install_telethon() {
-    echo -e "${CYAN}>> Installing telethon and requests${NC}"
-    python3 -m pip install telethon requests --break-system-packages
-}
-
-# ---------- Install everything ----------
 install_all() {
-    install_base
-    install_telegram_bot
-    install_pytelegrambotapi
-    install_flask
-    install_aiosqlite
-    install_aiohttp
-    install_telethon
+    for entry in "${PACKAGES[@]}"; do
+        IFS='|' read -r title cmd <<< "$entry"
+        install_package "$title" "$cmd"
+    done
 }
 
-# ---------- Menu ----------
 show_menu() {
     echo ""
     echo -e "${YELLOW}=== Server Setup Menu ===${NC}"
-    echo "1) Base install (python3 + pip + screen)"
-    echo "2) Install python-telegram-bot"
-    echo "3) Install pyTelegramBotAPI"
-    echo "4) Install flask"
-    echo "5) Install aiosqlite"
-    echo "6) Install aiohttp"
-    echo "7) Install telethon + requests"
-    echo "8) Install everything above"
+    local i=1
+    for entry in "${PACKAGES[@]}"; do
+        IFS='|' read -r title cmd <<< "$entry"
+        echo "$i) $title"
+        ((i++))
+    done
+    echo "$i) Install everything above"
+    local all_index=$i
     echo "0) Exit"
     echo ""
-    read -rp "Enter option number(s), space-separated (e.g. 1 3 4): " choices
+    read -rp "Enter option number(s), space-separated (e.g. 1 3 4), or 'all': " choices
+
+    if [[ "$choices" == "all" ]]; then
+        install_all
+        return
+    fi
+
     for choice in $choices; do
-        case $choice in
-            1) install_base ;;
-            2) install_telegram_bot ;;
-            3) install_pytelegrambotapi ;;
-            4) install_flask ;;
-            5) install_aiosqlite ;;
-            6) install_aiohttp ;;
-            7) install_telethon ;;
-            8) install_all ;;
-            0) echo "Exiting."; exit 0 ;;
-            *) echo -e "${YELLOW}Invalid option: $choice${NC}" ;;
-        esac
+        if ! [[ "$choice" =~ ^[0-9]+$ ]]; then
+            echo -e "${RED}Invalid option: $choice${NC}"
+            continue
+        fi
+        if [[ "$choice" == "0" ]]; then
+            echo "Exiting."
+            exit 0
+        elif [[ "$choice" == "$all_index" ]]; then
+            install_all
+        else
+            local index=$((choice - 1))
+            if [[ -z "${PACKAGES[$index]}" ]]; then
+                echo -e "${RED}Invalid option: $choice${NC}"
+                continue
+            fi
+            IFS='|' read -r title cmd <<< "${PACKAGES[$index]}"
+            install_package "$title" "$cmd"
+        fi
     done
 }
 
@@ -96,8 +92,10 @@ show_menu() {
 # If --all is passed as an argument, install everything without showing the menu
 if [[ "$1" == "--all" ]]; then
     install_all
+    echo -e "${GREEN}✔ Setup complete.${NC}"
 else
-    show_menu
+    while true; do
+        show_menu
+        echo -e "${GREEN}✔ Done.${NC}"
+    done
 fi
-
-echo -e "${GREEN}✔ Setup complete.${NC}"
