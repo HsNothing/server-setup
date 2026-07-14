@@ -11,13 +11,12 @@
 #   وقتی اسکریپت رو اجرا کنی، یه منو نشون داده می‌شه و با زدن عدد
 #   همون پروژه توی یه اسکرین جدا اجرا می‌شه و بعد خودش برمی‌گرده به ترمینال.
 #
-
 # ============================================================
 #  اینجا پروژه‌هاتو تعریف کن
 #  فرمت هر خط: "اسم نمایشی|اسم اسکرین|مسیر دایرکتوری|دستور اجرا"
 # ============================================================
 PROJECTS=(
-    "ربات|bot|/root/bot|python3 main.py"
+    "D_vpn|D_vpn|/root/D_vpn|python3 D_vpn.py"
     "پنل|panel|/root/panel|python3 app.py"
 )
 # مثال بیشتر:
@@ -37,55 +36,55 @@ run_project() {
     local cmd="$4"
 
     if [[ ! -d "$dir" ]]; then
-        echo -e "${RED}✘ خطا: مسیر '$dir' پیدا نشد.${NC}"
+        echo -e "${RED}✘ Error: path '$dir' not found.${NC}"
         return 1
     fi
 
     # اگه اسکرین با همین اسم از قبل باز باشه، بهش خبر می‌ده
     if screen -list | grep -q "\.${screen_name}[[:space:]]"; then
-        echo -e "${YELLOW}⚠ یه اسکرین با اسم '${screen_name}' از قبل وجود داره.${NC}"
-        read -rp "می‌خوای بهش وصل بشی (attach) یا لغو کنی؟ [a=attach / c=cancel]: " ans
+        echo -e "${YELLOW}⚠ A screen named '${screen_name}' already exists.${NC}"
+        read -rp "Attach to it or cancel? [a=attach / c=cancel]: " ans
         if [[ "$ans" == "a" ]]; then
             screen -r "$screen_name"
         else
-            echo "لغو شد."
+            echo "Cancelled."
         fi
         return
     fi
 
-    echo -e "${CYAN}>> در حال اجرای «$title» توی اسکرین '$screen_name'...${NC}"
-    echo -e "${CYAN}   مسیر: $dir${NC}"
-    echo -e "${CYAN}   دستور: $cmd${NC}"
+    echo -e "${CYAN}>> Starting \"$title\" in screen '$screen_name'...${NC}"
+    echo -e "${CYAN}   Path: $dir${NC}"
+    echo -e "${CYAN}   Command: $cmd${NC}"
 
     # ساخت اسکرین جدید در حالت detached و اجرای دستور توش
     screen -dmS "$screen_name" bash -c "cd '$dir' && $cmd; exec bash"
-
     sleep 1
-    echo -e "${GREEN}✔ اسکرین '$screen_name' ساخته شد و برنامه در پس‌زمینه اجرا شد.${NC}"
-    echo -e "برای وصل شدن به اون بعداً بزن: ${YELLOW}screen -r $screen_name${NC}"
+
+    echo -e "${GREEN}✔ Screen '$screen_name' created and the program is running in the background.${NC}"
+    echo -e "To attach to it later, run: ${YELLOW}screen -r $screen_name${NC}"
 }
 
 show_menu() {
     echo ""
-    echo -e "${YELLOW}=== منوی اجرای پروژه‌ها ===${NC}"
+    echo -e "${YELLOW}=== Project Launcher Menu ===${NC}"
     local i=1
     for entry in "${PROJECTS[@]}"; do
         IFS='|' read -r title screen_name dir cmd <<< "$entry"
         echo "$i) $title  (screen: $screen_name)"
         ((i++))
     done
-    echo "0) خروج"
+    echo "0) Exit"
     echo ""
-    read -rp "شماره پروژه رو انتخاب کن: " choice
+    read -rp "Select project number: " choice
 
     if [[ "$choice" == "0" ]]; then
-        echo "خروج."
+        echo "Exiting."
         exit 0
     fi
 
     local index=$((choice - 1))
     if [[ -z "${PROJECTS[$index]}" ]]; then
-        echo -e "${RED}گزینه‌ی نامعتبر.${NC}"
+        echo -e "${RED}Invalid option.${NC}"
         return
     fi
 
