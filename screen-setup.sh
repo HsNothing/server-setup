@@ -23,24 +23,20 @@ PROJECTS=(
 # مثال بیشتر:
 # "بک‌آپ گیر|backup|/root/backup|python3 backup.py"
 # ============================================================
-
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 CYAN='\033[0;36m'
 RED='\033[0;31m'
 NC='\033[0m'
-
 run_project() {
     local title="$1"
     local screen_name="$2"
     local dir="$3"
     local cmd="$4"
-
     if [[ ! -d "$dir" ]]; then
         echo -e "${RED}✘ Error: path '$dir' not found.${NC}"
         return 1
     fi
-
     # اگه اسکرین با همین اسم از قبل باز باشه، بهش خبر می‌ده
     if screen -list | grep -q "\.${screen_name}[[:space:]]"; then
         echo -e "${YELLOW}⚠ A screen named '${screen_name}' already exists.${NC}"
@@ -52,24 +48,19 @@ run_project() {
         fi
         return
     fi
-
     echo -e "${CYAN}>> Starting \"$title\" in screen '$screen_name'...${NC}"
     echo -e "${CYAN}   Path: $dir${NC}"
     echo -e "${CYAN}   Command: $cmd${NC}"
-
     # دقیقا مثل روش دستی: اول یه اسکرین خالی می‌سازیم (بدون bash -c دور دستور)
     screen -dmS "$screen_name"
     sleep 0.5
-
     # حالا دستورات رو انگار داریم خودمون تایپ می‌کنیم داخل همون اسکرین می‌فرستیم
     screen -S "$screen_name" -X stuff "cd '$dir'$(printf \\r)"
     screen -S "$screen_name" -X stuff "$cmd$(printf \\r)"
-
     sleep 1
     echo -e "${GREEN}✔ Screen '$screen_name' created and the program is running in the background.${NC}"
     echo -e "To attach to it later, run: ${YELLOW}screen -r $screen_name${NC}"
 }
-
 show_menu() {
     echo ""
     echo -e "${YELLOW}=== Project Launcher Menu ===${NC}"
@@ -82,20 +73,23 @@ show_menu() {
     echo "0) Exit"
     echo ""
     read -rp "Select project number: " choice
-
     if [[ "$choice" == "0" ]]; then
         echo "Exiting."
         exit 0
     fi
-
+    if ! [[ "$choice" =~ ^[0-9]+$ ]]; then
+        echo -e "${RED}Invalid option.${NC}"
+        return
+    fi
     local index=$((choice - 1))
     if [[ -z "${PROJECTS[$index]}" ]]; then
         echo -e "${RED}Invalid option.${NC}"
         return
     fi
-
     IFS='|' read -r title screen_name dir cmd <<< "${PROJECTS[$index]}"
     run_project "$title" "$screen_name" "$dir" "$cmd"
 }
 
-show_menu
+while true; do
+    show_menu
+done
