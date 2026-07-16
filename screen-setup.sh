@@ -17,11 +17,14 @@
 #  فرمت هر خط: "اسم نمایشی|اسم اسکرین|مسیر دایرکتوری|دستور اجرا"
 # ============================================================
 PROJECTS=(
-    "D_vpn|D_vpn|/root/D_vpn|python3 D_vpn.py"
-    "پنل|panel|/root/panel|python3 app.py"
+    "XLR|XLR|/root/Static/XLR|python3 XLR.py"
+    "Bot EL |EL_bot|/root/Dynamic/EL/Customer_EL|python3 bot.py" 
+    "Panel EL |EL_panel|/root/Dynamic/EL/Customer_EL|python3 panel.py" 
+    "Mini app EL |EL_miniApp|/root/Dynamic/EL/Customer_EL|python3 miniapp.py" 
+    "seller EL |EL_seller|/root/Dynamic/EL/Seller_EL|python3 panel.py" 
+    "factor |factor|/root/Static/factor|python3 factor.py"
 )
-# مثال بیشتر:
-# "بک‌آپ گیر|backup|/root/backup|python3 backup.py"
+
 # ============================================================
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
