@@ -23,6 +23,7 @@ PROJECTS=(
     "Mini app EL |EL_miniApp|/root/Dynamic/EL/Customer_EL|python3 miniapp.py" 
     "seller EL |EL_seller|/root/Dynamic/EL/Seller_EL|python3 panel.py" 
     "factor |factor|/root/Static/factor|python3 factor.py"
+    "server_monitor |server_monitor|/root/Static/server_monitor|python3 app.py" 
 )
 
 # ============================================================
