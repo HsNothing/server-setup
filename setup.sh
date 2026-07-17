@@ -27,6 +27,10 @@ PACKAGES=(
     "aiosqlite|python3 -m pip install aiosqlite --break-system-packages"
     "aiohttp|python3 -m pip install aiohttp --break-system-packages"
     "telethon + requests|python3 -m pip install telethon requests --break-system-packages"
+    "yt-dlp|sudo python3 -m pip install yt-dlp --break-system-packages"
+    "ffmpeg|sudo apt update && sudo apt install -y ffmpeg"
+    "psutil|sudo python3 -m pip install psutil --break-system-packages"
+
 )
 # مثال اضافه کردن پکیج جدید:
 # "django|python3 -m pip install django --break-system-packages"
